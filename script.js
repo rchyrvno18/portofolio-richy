@@ -1,85 +1,46 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Tahun Otomatis di Footer
-  const yearEl = document.getElementById('year');
-  if (yearEl) {
-    yearEl.textContent = new Date().getFullYear();
-  }
-
-  // 2. Toggle Menu Mobile
-  const menuToggle = document.getElementById('menuToggle');
-  const navLinks = document.getElementById('navLinks');
-
-  if (menuToggle && navLinks) {
-    menuToggle.addEventListener('click', () => {
-      navLinks.classList.toggle('active');
-    });
-
-    navLinks.querySelectorAll('a').forEach((link) => {
-      link.addEventListener('click', () => {
-        navLinks.classList.remove('active');
-      });
-    });
-  }
-
-  // 3. Filter Kategori Keahlian (Semua / UI/UX / Web Dev)
-  const tabButtons = document.querySelectorAll('.tab-btn');
-  const skillItems = document.querySelectorAll('.skill-item');
-
-  tabButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      tabButtons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const filter = btn.getAttribute('data-filter');
-
-      skillItems.forEach((item) => {
-        const category = item.getAttribute('data-category');
-        if (filter === 'all' || category === filter) {
-          item.classList.remove('hidden');
-        } else {
-          item.classList.add('hidden');
-        }
-      });
-    });
+  // Suntikkan elemen poster & ekosistem laut berulang di tiap kartu
+  document.querySelectorAll('.poster-card').forEach((card, idx) => {
+    const deco = idx % 2 === 0
+      ? '<div class="svg-fish-school" aria-hidden="true"></div>'
+      : '<div class="svg-starfish" aria-hidden="true"></div>';
+    card.insertAdjacentHTML('afterbegin', `<div class="underwater-rays" aria-hidden="true"></div><div class="card-bubbles" aria-hidden="true"><span></span><span></span><span></span></div>${deco}<div class="poster-meta"><span>RichyRivano.</span><span>Portofolio 2026</span></div>`);
+    card.insertAdjacentHTML('beforeend', '<div class="halftone-strip" aria-hidden="true"></div>');
   });
 
-  // 4. Modal Detail Proyek
-  const openModalBtn = document.getElementById('openProjectModal');
-  const closeModalBtn = document.getElementById('closeProjectModal');
-  const projectModal = document.getElementById('projectModal');
+  // Tahun footer & toggle menu mobile
+  document.getElementById('year').textContent = new Date().getFullYear();
+  const navLinks = document.getElementById('navLinks');
+  document.getElementById('menuToggle')?.addEventListener('click', () => navLinks.classList.toggle('active'));
+  navLinks?.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('active')));
 
-  if (openModalBtn && closeModalBtn && projectModal) {
-    openModalBtn.addEventListener('click', () => {
-      projectModal.classList.add('open');
-      projectModal.setAttribute('aria-hidden', 'false');
-    });
+  // Filter kategori kemampuan
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  tabBtns.forEach(btn => btn.addEventListener('click', () => {
+    tabBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    document.querySelectorAll('.skill-item').forEach(el => el.classList.toggle('hidden', f !== 'all' && el.dataset.category !== f));
+  }));
 
-    closeModalBtn.addEventListener('click', () => {
-      projectModal.classList.remove('open');
-      projectModal.setAttribute('aria-hidden', 'true');
-    });
+  // Modal detail proyek
+  const modal = document.getElementById('projectModal');
+  const toggleModal = open => { modal.classList.toggle('open', open); modal.setAttribute('aria-hidden', !open); };
+  document.getElementById('openProjectModal')?.addEventListener('click', () => toggleModal(true));
+  document.getElementById('closeProjectModal')?.addEventListener('click', () => toggleModal(false));
+  modal?.addEventListener('click', e => { if (e.target === modal) toggleModal(false); });
 
-    projectModal.addEventListener('click', (e) => {
-      if (e.target === projectModal) {
-        projectModal.classList.remove('open');
-        projectModal.setAttribute('aria-hidden', 'true');
-      }
-    });
-  }
+  // Scroll reveal & highlight menu navbar aktif
+  const observer = new IntersectionObserver(entries => entries.forEach(e => e.isIntersecting && e.target.classList.add('visible')), { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-  // 5. Animasi Muncul Saat di-Scroll (Intersection Observer)
-  const revealElements = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.12 }
-  );
-
-  revealElements.forEach((el) => observer.observe(el));
+  const navbar = document.getElementById('navbar');
+  const sections = document.querySelectorAll('main section[id]');
+  const navItems = document.querySelectorAll('.nav-links .nav-item');
+  window.addEventListener('scroll', () => {
+    navbar?.classList.toggle('scrolled', scrollY > 20);
+    let current = '';
+    sections.forEach(s => { if (scrollY >= s.offsetTop - 130) current = s.id; });
+    navItems.forEach(item => item.classList.toggle('active', item.getAttribute('href') === `#${current}`));
+  });
 });
